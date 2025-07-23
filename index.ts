@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import mongoose from 'mongoose';
 import { connectDb } from './config';
 import cors from 'cors'
-import { errorHandler } from './middleware/errorHandler';
+import { errorHandler, errorMiddleware } from './middleware/errorHandler';
 dotenv.config();
 
 const app = express();
@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 
 
 
-app.use(errorHandler)
+app.use(errorMiddleware)
 
 const startServer = async () => {
     // Connect Database
