@@ -26,7 +26,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
             });
         }
     } catch (error: any) {
-
+        console.error(error)
+        return errorHandler(500, "internal server Error", next);
     }
 }
 
@@ -52,7 +53,8 @@ const Login = async (req: Request, res: Response, next: NextFunction) => {
             });
         }
     } catch (error) {
-
+        console.error(error)
+        return errorHandler(500, "internal server Error", next);
     }
 }
 
@@ -64,7 +66,8 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
             data: users,
         });
     } catch (error) {
-
+        console.error(error)
+        return errorHandler(500, "internal server Error", next);
     }
 }
 
@@ -78,10 +81,33 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
             data: user,
         });
     } catch (error) {
-
+        console.error(error)
+        return errorHandler(500, "internal server Error", next);
     }
 }
 
+const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json(
+                {
+                    success: false,
+                    message: "UserId is required",
+                }
+            )
+        }
+        const user = await User.findById(id);
+        res.status(200).json({
+            success: true,
+            message: "User Details",
+            data: user,
+        });
+    } catch (error) {
+        console.error(error)
+        return errorHandler(500, "internal server Error", next);
+    }
+}
 
 const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -93,6 +119,18 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
             data: user,
         });
     } catch (error) {
-
+        console.error(error)
+        return errorHandler(500, "internal server Error", next);
     }
+}
+
+
+
+export const userController = {
+    createUser,
+    Login,
+    getAllUsers,
+    updateUser,
+    deleteUser,
+    getUserById
 }

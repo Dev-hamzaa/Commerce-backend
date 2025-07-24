@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { connectDb } from './config';
 import cors from 'cors'
 import { errorHandler, errorMiddleware } from './middleware/errorHandler';
+import mainRouter from './Routes/index'
 dotenv.config();
 
 const app = express();
@@ -19,8 +20,7 @@ app.get('/', (req, res) => {
 
 
 
-
-
+app.use('/api', mainRouter)
 app.use(errorMiddleware)
 
 const startServer = async () => {

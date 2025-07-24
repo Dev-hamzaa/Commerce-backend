@@ -19,14 +19,14 @@ const productSchema = new mongoose.Schema(
         },
         images: [
             {
-
+                imgUrl: String
             }
-        ],
-        createdAt: {
-            type: Date,
-            default: Date.now
-        }
-    }
+        ]
+
+    }, {
+    timestamps: true
+}
+
 )
 
 export const Product = mongoose.model("Product", productSchema)
