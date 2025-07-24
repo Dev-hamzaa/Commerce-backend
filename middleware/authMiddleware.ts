@@ -17,10 +17,10 @@ const authMiddleware = async (
         '/api/user/reset-password',
     ]
 
-    // if (publicRoutes.some((route) => req.path.startsWith(route))) {
-    //     next()
-    //     return
-    // }
+    if (publicRoutes.some((route) => req.path.startsWith(route))) {
+        next()
+        return
+    }
 
     try {
         const accessToken = req.headers.authorization?.split(' ')[1]

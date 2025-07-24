@@ -36,6 +36,7 @@ const Login = async (req: Request, res: Response, next: NextFunction) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
+            console.log("Please provide email and password")
             return res.status(400).json(
                 {
                     success: false,

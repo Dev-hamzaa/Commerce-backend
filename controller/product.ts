@@ -1,3 +1,4 @@
+import { Category } from './../model/category';
 import { errorHandler } from './../middleware/errorHandler';
 import { NextFunction, Request, Response } from "express";
 import { baseCreate, baseDelete, baseUpdate } from "../services/baseActions";
@@ -8,8 +9,8 @@ import { Product } from "../model/product";
 
 const createProduct = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-        const { name, price, description, category, images } = req.body;
-        const { success, data } = await baseCreate(Product, req.body);
+        const { name, price, description, category } = req.body;
+
 
         if (!category || !name || !price) {
             return res.status(400).json(
@@ -18,6 +19,23 @@ const createProduct = async (req: Request, res: Response, next: NextFunction): P
                     mesage: "Please provide required Filelds"
                 }
             )
+        }
+        const categoryExisit = await Category.findById(
+            {
+                _id: category
+            }
+        )
+        if (!categoryExisit) {
+            return res.status(400).json(
+                {
+                    success: false,
+                    message: "Categoy does not exist",
+                }
+            )
+        }
+        const { success, data } = await baseCreate(Product, req.body);
+        if (!success) {
+            return errorHandler(500, "internal server Error", next);
         }
         if (req.files) {
             //Handle the File uploading to the s3
