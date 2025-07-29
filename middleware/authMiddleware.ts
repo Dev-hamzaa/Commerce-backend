@@ -11,6 +11,7 @@ const authMiddleware = async (
 ): Promise<void> => {
     const publicRoutes = [
         '/api/auth/login',
+        '/api/auth/signup',
         '/api/auth/session',
         '/register',
         '/api/user/forget-password',
@@ -38,7 +39,7 @@ const authMiddleware = async (
             accessToken,
             process.env.JWT_SECRET as string,
         ) as jwt.JwtPayload
-        console.log("Verify Token", verifyToken)
+        // console.log("Verify Token", verifyToken)
         if (!verifyToken) {
             res.status(401).json({ message: 'Unauthorized - Invalid token' })
             return

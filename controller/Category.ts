@@ -76,6 +76,15 @@ const updateCategory = async (req: Request, res: Response, next: NextFunction) =
     try {
         const { id } = req.params;
         const { name } = req.body;
+        const duplicateCategory = await Category.findById(id);
+        if (duplicateCategory) {
+            return res.status(200).json(
+                {
+                    success: false,
+                    message: "Category already Exists"
+                }
+            )
+        }
         const category = await Category.findByIdAndUpdate(id, { name }, { new: true });
         if (!category) {
             return res.status(404).json({
@@ -83,7 +92,7 @@ const updateCategory = async (req: Request, res: Response, next: NextFunction) =
                 message: "Category not found"
             })
         }
-        return res.json({
+        return res.status(200).json({
             success: true,
             message: "Category updated",
             data: category

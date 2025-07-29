@@ -16,7 +16,7 @@ const createProduct = async (req: Request, res: Response, next: NextFunction): P
             return res.status(400).json(
                 {
                     success: false,
-                    mesage: "Please provide required Filelds"
+                    message: "Please provide required Filelds"
                 }
             )
         }
@@ -33,20 +33,26 @@ const createProduct = async (req: Request, res: Response, next: NextFunction): P
                 }
             )
         }
-        const { success, data } = await baseCreate(Product, req.body);
-        if (!success) {
+        const createProduct = await Product.create({
+            name,
+            price,
+            description,
+            category,
+        });
+        if (req.files && Object.keys(req.files).length > 0) {
+            // TODO: Handle file upload to S3
+        }
+        if (createProduct) {
+            return res.status(200).json(
+                {
+                    success: true,
+                    message: "Product Created Successfully",
+                    data: createProduct
+                }
+            )
+        } else {
             return errorHandler(500, "internal server Error", next);
         }
-        if (req.files) {
-            //Handle the File uploading to the s3
-        }
-        if (success) {
-            return res.status(201).json({
-                success: true,
-                data: data,
-            });
-        }
-
     } catch (error) {
         console.error(error)
         return errorHandler(500, 'internal servor Error', next)
@@ -86,7 +92,9 @@ const updateProduct = async (req: Request, res: Response, next: NextFunction) =>
             },
             { new: true }
         )
-
+        if (req.files && Object.keys(req.files).length > 0) {
+            // TODO: Handle file upload to S3
+        }
         return res.status(200).json(
 
             {

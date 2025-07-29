@@ -6,6 +6,7 @@ import cors from 'cors'
 import { errorHandler, errorMiddleware } from './middleware/errorHandler';
 import mainRouter from './routes/index';
 import authMiddleware from './middleware/authMiddleware';
+import { logger } from './utility/logger';
 dotenv.config();
 
 const app = express();
@@ -19,7 +20,7 @@ app.get('/', (req, res) => {
     res.send('Commerce-Backend v=>1.0 ');
 });
 
-
+app.use(logger)
 app.use(authMiddleware)
 app.use('/api', mainRouter)
 app.use(errorMiddleware)

@@ -4,27 +4,53 @@ import { errorHandler } from "../middleware/errorHandler";
 import { baseCreate } from "../services/baseActions";
 import { User } from "../model/user";
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt'
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
-
+            return errorHandler(400, "Please provide all the required fields", next)
         }
-        const { success, data } = await baseCreate(User, req.body)
-        if (success) {
-            res.status(201).json({
-                success: true,
-                data: data,
-            });
+
+        // Check if the user Exists
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const foundUser = await User.findOne(
+            {
+                email: normalizedEmail
+            }
+        )
+        if (foundUser) {
+            return res.status(400).json(
+                {
+                    success: false,
+                    message: "Email is already registered"
+                }
+            )
+        }
+
+        const newUser = await User.create(
+            {
+                name: name,
+                email: normalizedEmail,
+                password: password
+            }
+        )
+        if (newUser) {
+            return res.status(201).json(
+                {
+                    success: true,
+                    message: "User Created Successfully",
+                    data: newUser
+                }
+            )
         }
         else {
-            res.status(400).json({
-                success: false,
-                data: data,
-            });
+            return errorHandler(400, "Invalid User Data", next)
         }
+
     } catch (error: any) {
         console.error(error)
         return errorHandler(500, "internal server Error", next);
@@ -44,13 +70,14 @@ const Login = async (req: Request, res: Response, next: NextFunction) => {
                 }
             )
         }
-        const user = await User.findOne({ email }).select("+password");
+        const user = await User.findOne({ email });
         if (user) {
             const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: "1d" })
             res.status(200).json({
                 success: true,
                 message: "Login Successfully",
                 token: token,
+                data: user
             });
         }
     } catch (error) {
