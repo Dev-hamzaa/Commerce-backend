@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { errorHandler } from "../middleware/errorHandler";
 import { Cart } from "../model/cart";
+import { Product } from "../model/product";
+import mongoose from "mongoose";
 
 const createCart = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -26,34 +28,57 @@ const createCart = async (req: Request, res: Response, next: NextFunction) => {
 const updateCart = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
-        const { userId, products } = req.body;
-        if (!userId || !products) {
+        const { userId, productId, quantity } = req.body;
+        if (!userId || !productId) {
             return errorHandler(400, "Please provide the user id and products", next)
         }
-        const updatedCart = await Cart.findByIdAndUpdate(
-            {
-                _id: id
-            },
-            {
-                userId: userId,
-                products: products
-            },
-            {
-                new: true
-            }
-        )
-        if (updatedCart) {
-            return res.status(200).json({
-                success: true,
-                message: "Cart updated successfully",
-                data: updatedCart
-            })
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+        const cart = await Cart.findOne({ userId: userId });
+        if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+        const exsistingItem = cart.products.find(p => p.productId === productId)
+        if (exsistingItem) {
+            exsistingItem.quantity += quantity
         }
-        return errorHandler(400, "Cart not updated", next)
+        else {
+            cart.products.push({ productId: productId, quantity: quantity, })
+        }
+        await cart.save();
+        return res.status(200).json({ message: "Product updated in cart", data: cart });
+
+
     } catch (error) {
         return errorHandler(500, "internal server Error", next)
     }
 }
+const removeFromCart = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId, productId } = req.body;
+
+    try {
+        // 1. Get the cart
+        const cart = await Cart.findOne({ userId });
+        if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+        const initialLength = cart.products.length;
+
+        cart.products.pull({ productId: new mongoose.Types.ObjectId(productId) });
+
+        if (cart.products.length === initialLength) {
+            return res.status(404).json({ message: "Product not found in cart" });
+        }
+        return res.status(200).json(
+            {
+                message: "product removed Successfully"
+            }
+        )
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
 
 const getUserCart = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -80,5 +105,7 @@ const getUserCart = async (req: Request, res: Response, next: NextFunction) => {
 export const cartController = {
     createCart,
     getUserCart,
-    updateCart
+    updateCart,
+    removeFromCart
+
 }

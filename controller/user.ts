@@ -5,6 +5,7 @@ import { baseCreate } from "../services/baseActions";
 import { User } from "../model/user";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt'
+import { Cart } from "../model/cart";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -39,6 +40,10 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
             }
         )
         if (newUser) {
+            // After user is created:
+            const cart = new Cart({ userId: newUser._id, products: [] });
+            await cart.save();
+
             return res.status(201).json(
                 {
                     success: true,
